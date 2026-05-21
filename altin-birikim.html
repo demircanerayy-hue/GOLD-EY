@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altın Birikimi — Ev Peşinatı</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #E1F5EE;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --red: #E24B4A;
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: rgba(0,0,0,0.09);
+    --border-strong: rgba(0,0,0,0.15);
+    --text: #1a1a1a;
+    --text-2: #5a5a5a;
+    --text-3: #999;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-icon {
+    width: 32px; height: 32px;
+    background: var(--green-light);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .topbar-sub { font-size: 12px; color: var(--text-2); }
+  .conn-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text-2);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 0.5px solid var(--border);
+  }
+  .conn-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background .3s;
+  }
+  .conn-dot.online { background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* LAYOUT */
+  .page { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* PRICE HERO */
+  .price-hero {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .price-label { font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+  .price-main { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .price-change { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .price-right { text-align: right; }
+  .ayar22-price { font-size: 13px; color: var(--text-2); }
+  .refresh-btn {
+    margin-top: 8px;
+    background: none; border: 0.5px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--green-dark);
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    float: right;
+  }
+  .refresh-btn:hover { background: var(--green-light); }
+  .spin { animation: spin .7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* METRIC CARDS */
+  .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 14px; }
+  .mc {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .mc-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+  .mc-val { font-size: 18px; font-weight: 700; color: var(--text); }
+  .mc-val.green { color: var(--green-dark); }
+  .mc-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  /* PROGRESS */
+  .prog-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .prog-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .prog-title { font-size: 14px; font-weight: 600; }
+  .prog-pct { font-size: 16px; font-weight: 700; color: var(--green-dark); }
+  .prog-bg { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .prog-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .6s ease; }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); }
+  .goal-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .goal-row label { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+  .goal-row input { flex: 1; min-width: 120px; height: 34px; padding: 0 10px; font-size: 13px; border: 0.5px solid var(--border-strong); border-radius: 8px; background: var(--bg); color: var(--text); }
+  .goal-row input:focus { outline: none; border-color: var(--green); }
+  .btn-save { height: 34px; padding: 0 14px; background: var(--green); border: none; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-save:hover { background: var(--green-dark); }
+
+  /* ADD CARD */
+  .add-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .add-card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .form-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: var(--text-2); font-weight: 500; text-transform: uppercase; letter-spacing: .3px; }
+  .field input, .field select {
+    height: 38px; padding: 0 10px; font-size: 14px;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 8px; background: var(--bg); color: var(--text);
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--green); background: #fff; }
+  .note-row { display: flex; gap: 10px; align-items: flex-end; }
+  .note-row .field { flex: 1; }
+  .btn-add {
+    height: 38px; padding: 0 20px;
+    background: var(--green); border: none; border-radius: 8px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: background .15s;
+  }
+  .btn-add:hover { background: var(--green-dark); }
+  .btn-add:disabled { opacity: .45; cursor: not-allowed; }
+  .ayar-hint {
+    font-size: 11px; color: var(--text-3);
+    background: var(--bg); border-radius: 6px;
+    padding: 6px 10px; margin-top: 6px;
+  }
+
+  /* ENTRIES */
+  .entries-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .entries-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .entries-title { font-size: 14px; font-weight: 600; }
+  .entry-count { font-size: 12px; color: var(--text-3); }
+  .empty-state { text-align: center; padding: 30px 0; color: var(--text-3); font-size: 13px; }
+  .entry-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .entry-row:last-child { border-bottom: none; }
+  .badge {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 7px; border-radius: 99px;
+    white-space: nowrap; flex-shrink: 0;
+    letter-spacing: .3px;
+  }
+  .badge-24 { background: var(--green-light); color: #085041; }
+  .badge-22 { background: var(--amber-light); color: #633806; }
+  .entry-info { flex: 1; min-width: 0; }
+  .entry-desc { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry-meta { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .entry-who { font-size: 10px; font-weight: 600; color: var(--green-dark); margin-right: 4px; }
+  .entry-amounts { text-align: right; flex-shrink: 0; }
+  .entry-gram { font-size: 13px; font-weight: 600; color: var(--text); }
+  .entry-tl { font-size: 11px; color: var(--text-3); }
+  .btn-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-3); font-size: 18px; padding: 2px 4px;
+    border-radius: 5px; line-height: 1; flex-shrink: 0;
+  }
+  .btn-del:hover { color: var(--red); background: #FCEBEB; }
+
+  /* WHO TAG */
+  .who-select { display: flex; gap: 6px; margin-bottom: 12px; }
+  .who-btn {
+    flex: 1; height: 36px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 8px; background: var(--bg);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    color: var(--text-2); transition: all .15s;
+  }
+  .who-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a; color: #fff; font-size: 13px; font-weight: 500;
+    padding: 10px 20px; border-radius: 99px;
+    transition: transform .3s ease; z-index: 100; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media(max-width:500px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .price-hero { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-icon">🏠</div>
+    <div>
+      <div class="topbar-title">Altın Birikimi</div>
+      <div class="topbar-sub">Ev Peşinatı Takibi</div>
+    </div>
+  </div>
+  <div class="conn-badge">
+    <div class="conn-dot" id="connDot"></div>
+    <span id="connLabel">bağlanıyor...</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- PRICE HERO -->
+  <div class="price-hero">
+    <div>
+      <div class="price-label">Gram Altın (24 Ayar)</div>
+      <div class="price-main" id="gramPrice">—</div>
+      <div class="price-change" id="priceTime">fiyat bekleniyor</div>
+    </div>
+    <div class="price-right">
+      <div class="ayar22-price">22 Ayar: <strong id="price22">—</strong></div>
+      <button class="refresh-btn" onclick="fetchPrice()" id="refreshBtn">
+        <span id="refreshIcon">↻</span> güncelle
+      </button>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="mc">
+      <div class="mc-label">Toplam Saf Altın</div>
+      <div class="mc-val" id="totalGram">0,00 gr</div>
+      <div class="mc-sub">24 ayar eşdeğer</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label">Toplam Değer</div>
+      <div class="mc-val green" id="totalTL">₺—</div>
+      <div class="mc-sub">anlık fiyata göre</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label">Hedefe Kalan</div>
+      <div class="mc-val" id="remaining">—</div>
+      <div class="mc-sub" id="remainingSub">hedef belirleyin</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-card">
+    <div class="prog-hdr">
+      <span class="prog-title">Hedefe İlerleme</span>
+      <span class="prog-pct" id="progPct">0%</span>
+    </div>
+    <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-labels">
+      <span id="progCurrent">₺0</span>
+      <span id="progGoalLabel">Hedef belirlenmedi</span>
+    </div>
+    <div class="goal-row">
+      <label for="goalInput">Hedef (₺):</label>
+      <input type="number" id="goalInput" placeholder="örn. 3000000">
+      <button class="btn-save" onclick="saveGoal()">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- ADD CARD -->
+  <div class="add-card">
+    <div class="add-card-title">➕ Altın Ekle</div>
+    <div class="who-select">
+      <button class="who-btn active" id="whoEray" onclick="selectWho('Eray')">👤 Eray</button>
+      <button class="who-btn" id="whoYaren" onclick="selectWho('Yaren')">👤 Yaren</button>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tür</label>
+        <select id="typeSelect" onchange="onTypeChange()">
+          <option value="24">24 Ayar — Gram Altın</option>
+          <option value="22">22 Ayar — Bilezik</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="amountLabel">Miktar (gram)</label>
+        <input type="number" id="amountInput" placeholder="5.00" min="0.01" step="0.01">
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="field">
+        <label>Not (isteğe bağlı)</label>
+        <input type="text" id="noteInput" placeholder="örn. Ocak 2025 birikimi">
+      </div>
+      <button class="btn-add" onclick="addEntry()">+ Ekle</button>
+    </div>
+    <div class="ayar-hint" id="ayarHint">24 ayar: gram değeri direkt kullanılır — saflık 1,000</div>
+  </div>
+
+  <!-- ENTRIES -->
+  <div class="entries-card">
+    <div class="entries-hdr">
+      <span class="entries-title">Kayıtlar</span>
+      <span class="entry-count" id="entryCount">yükleniyor...</span>
+    </div>
+    <div id="entriesList"><div class="empty-state">Bağlanıyor...</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, remove, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDsO_0do6pp-dd6Jd4Ak5cZwpAz3agCYUg",
+  authDomain: "ey-gold.firebaseapp.com",
+  databaseURL: "https://ey-gold-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ey-gold",
+  storageBucket: "ey-gold.firebasestorage.app",
+  messagingSenderId: "770622567871",
+  appId: "1:770622567871:web:c6cb5f720e18cbb5519d0a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const PURITY_22 = 22 / 24;
+
+let gramPrice = null;
+let allEntries = [];
+let goalTL = null;
+let selectedWho = 'Eray';
+
+// CONNECTION STATUS
+const connDot = document.getElementById('connDot');
+const connLabel = document.getElementById('connLabel');
+
+// Listen to entries in real-time
+const entriesRef = ref(db, 'entries');
+onValue(entriesRef, (snapshot) => {
+  connDot.classList.add('online');
+  connLabel.textContent = 'canlı bağlantı';
+  allEntries = [];
+  if (snapshot.exists()) {
+    snapshot.forEach(child => {
+      allEntries.push({ id: child.key, ...child.val() });
+    });
+    allEntries.sort((a, b) => b.timestamp - a.timestamp);
+  }
+  renderEntries();
+  updateMetrics();
+}, (error) => {
+  connDot.classList.remove('online');
+  connLabel.textContent = 'bağlantı yok';
+});
+
+// Listen to goal in real-time
+const goalRef = ref(db, 'goal');
+onValue(goalRef, (snapshot) => {
+  if (snapshot.exists()) {
+    goalTL = snapshot.val();
+    document.getElementById('goalInput').value = goalTL;
+    updateMetrics();
+  }
+});
+
+// SELECT WHO
+window.selectWho = function(who) {
+  selectedWho = who;
+  document.getElementById('whoEray').classList.toggle('active', who === 'Eray');
+  document.getElementById('whoYaren').classList.toggle('active', who === 'Yaren');
+};
+
+// TYPE CHANGE
+window.onTypeChange = function() {
+  const t = document.getElementById('typeSelect').value;
+  const hint = document.getElementById('ayarHint');
+  const lbl = document.getElementById('amountLabel');
+  if (t === '22') {
+    hint.textContent = '22 ayar bilezik: saflık 22/24 ≈ 0.917 — saf altın gramına çevrilir';
+    lbl.textContent = 'Miktar (gram)';
+  } else {
+    hint.textContent = '24 ayar: gram değeri direkt kullanılır — saflık 1.000';
+    lbl.textContent = 'Miktar (gram)';
+  }
+};
+
+// ADD ENTRY
+window.addEntry = async function() {
+  const type = document.getElementById('typeSelect').value;
+  const raw = parseFloat(document.getElementById('amountInput').value);
+  const note = document.getElementById('noteInput').value.trim();
+  if (!raw || raw <= 0) { showToast('Geçerli bir miktar gir'); return; }
+
+  const purity = type === '22' ? PURITY_22 : 1;
+  const pureGram = raw * purity;
+
+  const entry = {
+    type,
+    raw,
+    pureGram,
+    note: note || null,
+    who: selectedWho,
+    date: new Date().toLocaleDateString('tr-TR'),
+    timestamp: Date.now(),
+    priceAtAdd: gramPrice || null
+  };
+
+  try {
+    await push(entriesRef, entry);
+    document.getElementById('amountInput').value = '';
+    document.getElementById('noteInput').value = '';
+    showToast(`${selectedWho} ekledi: ${raw.toFixed(2)} gr ${type} ayar`);
+  } catch(e) {
+    showToast('Eklenirken hata oluştu');
+  }
+};
+
+// DELETE ENTRY
+window.deleteEntry = async function(id) {
+  try {
+    await remove(ref(db, 'entries/' + id));
+    showToast('Kayıt silindi');
+  } catch(e) {
+    showToast('Silinemedi');
+  }
+};
+
+// SAVE GOAL
+window.saveGoal = async function() {
+  const v = parseFloat(document.getElementById('goalInput').value);
+  if (!v || v <= 0) { showToast('Geçerli bir hedef gir'); return; }
+  try {
+    await set(goalRef, v);
+    showToast('Hedef kaydedildi');
+  } catch(e) {
+    showToast('Kaydedilemedi');
+  }
+};
+
+// RENDER ENTRIES
+function renderEntries() {
+  const list = document.getElementById('entriesList');
+  document.getElementById('entryCount').textContent = allEntries.length + ' kayıt';
+  if (!allEntries.length) {
+    list.innerHTML = '<div class="empty-state">Henüz altın eklenmedi</div>';
+    return;
+  }
+  list.innerHTML = allEntries.map(e => {
+    const tlVal = gramPrice ? '₺' + Math.round(e.pureGram * gramPrice).toLocaleString('tr-TR') : '—';
+    const purityStr = e.type === '22'
+      ? `${e.raw.toFixed(2)} gr → ${e.pureGram.toFixed(3)} gr saf`
+      : `${e.raw.toFixed(2)} gr saf`;
+    const whoColor = e.who === 'Yaren' ? '#7F77DD' : '#1D9E75';
+    return `<div class="entry-row">
+      <span class="badge badge-${e.type}">${e.type} Ayar</span>
+      <div class="entry-info">
+        <div class="entry-desc">${e.note || (e.type === '22' ? '22 Ayar Bilezik' : '24 Ayar Altın')}</div>
+        <div class="entry-meta">
+          <span class="entry-who" style="color:${whoColor}">● ${e.who || '?'}</span>
+          ${e.date} · ${purityStr}
+        </div>
+      </div>
+      <div class="entry-amounts">
+        <div class="entry-gram">${e.raw.toFixed(2)} gr</div>
+        <div class="entry-tl">${tlVal}</div>
+      </div>
+      <button class="btn-del" onclick="deleteEntry('${e.id}')" title="Sil">×</button>
+    </div>`;
+  }).join('');
+}
+
+// UPDATE METRICS
+function updateMetrics() {
+  const totalPure = allEntries.reduce((s, e) => s + (e.pureGram || 0), 0);
+  document.getElementById('totalGram').textContent =
+    totalPure.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 3 }) + ' gr';
+
+  if (gramPrice) {
+    const totalVal = totalPure * gramPrice;
+    document.getElementById('totalTL').textContent = '₺' + Math.round(totalVal).toLocaleString('tr-TR');
+    document.getElementById('progCurrent').textContent = '₺' + Math.round(totalVal).toLocaleString('tr-TR');
+
+    if (goalTL) {
+      const pct = Math.min(100, (totalVal / goalTL) * 100);
+      const rem = Math.max(0, goalTL - totalVal);
+      document.getElementById('progFill').style.width = pct.toFixed(1) + '%';
+      document.getElementById('progPct').textContent = pct.toFixed(1) + '%';
+      document.getElementById('progGoalLabel').textContent = 'Hedef: ₺' + Math.round(goalTL).toLocaleString('tr-TR');
+      document.getElementById('remaining').textContent = '₺' + Math.round(rem).toLocaleString('tr-TR');
+      document.getElementById('remainingSub').textContent = 'hedefe kalan';
+    } else {
+      document.getElementById('progGoalLabel').textContent = 'Hedef belirlenmedi';
+    }
+  } else {
+    document.getElementById('totalTL').textContent = '₺—';
+  }
+}
+
+// FETCH PRICE
+window.fetchPrice = async function() {
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('spin');
+  try {
+    const r1 = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    const fx = await r1.json();
+    const tryRate = fx.rates?.TRY;
+
+    const r2 = await fetch('https://api.gold-api.com/price/XAU');
+    const gold = await r2.json();
+    const usdPerOz = gold?.price;
+
+    if (tryRate && usdPerOz) {
+      gramPrice = (usdPerOz * tryRate) / 31.1035;
+      const now = new Date();
+      document.getElementById('gramPrice').textContent =
+        '₺' + Math.round(gramPrice).toLocaleString('tr-TR');
+      document.getElementById('price22').textContent =
+        '₺' + Math.round(gramPrice * PURITY_22).toLocaleString('tr-TR');
+      document.getElementById('priceTime').textContent =
+        now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' güncellendi';
+      updateMetrics();
+      renderEntries();
+    }
+  } catch(e) {
+    document.getElementById('priceTime').textContent = 'fiyat alınamadı';
+  }
+  icon.classList.remove('spin');
+};
+
+// TOAST
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
+
+// INIT
+fetchPrice();
+setInterval(fetchPrice, 5 * 60 * 1000);
+</script>
+</body>
+</html>
